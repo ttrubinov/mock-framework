@@ -1,13 +1,17 @@
 package mock.matchers;
 
 import mock.exception.MatcherException;
+import mock.exception.MockException;
 import mock.matchers.Matchers.AbstractMatcher;
 import mock.matchers.Matchers.AnyMatcher;
 import mock.matchers.Matchers.CollectionMatcher;
 import mock.matchers.Matchers.EqualsMatcher;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public class ArgumentsMatcher {
     public static MatcherGroup last;
@@ -17,7 +21,7 @@ public class ArgumentsMatcher {
     }
 
     public static void clearMatchers() {
-        last.matchers.clear();
+        last = new MatcherGroup();
     }
 
     public static <T> T eq(T object) {
@@ -42,6 +46,12 @@ public class ArgumentsMatcher {
         return (T) null;
     }
 
+    public static int anyInt() {
+        any(int.class);
+        return 0;
+    }
+
+
     public static <T> T any() {
         last.add(new AnyMatcher<>());
         return (T) null;
@@ -52,7 +62,7 @@ public class ArgumentsMatcher {
      * Matchers position in list is important
      */
     public static class MatcherGroup {
-        List<AbstractMatcher> matchers = new ArrayList<>();
+        final List<AbstractMatcher> matchers = new ArrayList<>();
 
         public void add(AbstractMatcher<?> abstractMatcher) {
             matchers.addLast(abstractMatcher);
@@ -72,14 +82,15 @@ public class ArgumentsMatcher {
 
         public boolean correctForMethod(Method method) {
             if (method.getParameterCount() != matchers.size()) {
-                return false;
+                throw new MockException("There are different argumentMatchers: " + matchers);
+//                return false;
             }
             var methodArgumentsTypes = method.getParameterTypes();
             int i = 0;
             for (AbstractMatcher<?> matcher : matchers) {
-                if (!matcher.correspondToClass(methodArgumentsTypes[i])) {
-                    return false;
-                }
+//                if (!matcher.correspondToClass(methodArgumentsTypes[i])) {
+//                    return false;
+//                }
                 i++;
             }
             return true;
@@ -91,6 +102,10 @@ public class ArgumentsMatcher {
                 matcherGroup.add(new Matchers.AnyMatcher<>());
             }
             return matcherGroup;
+        }
+
+        public boolean isEmpty() {
+            return matchers.isEmpty();
         }
     }
 }

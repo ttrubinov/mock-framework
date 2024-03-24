@@ -1,17 +1,12 @@
-import org.junit.jupiter.api.Assertions;
+import mock.MyClass;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.*;
 
 public class MyTest {
 
     @Test
     void myTest() {
-    }
-    class MyClass {
-        public int aboba(int x, int y) {
-            return x + y;
-        }
+        MyClass myClass = Mockito.mock(MyClass.class);
+        Mockito.doNothing().when(myClass).some(0, 0);
     }
 }
