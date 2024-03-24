@@ -4,10 +4,14 @@ import mock.exception.MockException;
 import mock.matchers.ArgumentsMatcher.MatcherGroup;
 import mock.matchers.Matchers;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.MethodCall;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
+import net.bytebuddy.pool.TypePool;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -81,16 +85,26 @@ public class ObjectMock {
 
     private static Set<Method> objectMethods = Arrays.stream(Object.class.getMethods()).collect(Collectors.toSet());
 
+    private static <T> List<Method> getMethodsOfClass(Class<T> classToMock) {
+        return Arrays.stream(classToMock.getMethods())
+                .filter(method -> !Modifier.isStatic(method.getModifiers())
+                        && !objectMethods.contains(method))
+                .toList();
+    }
+
+    private static <T> List<Method> getStaticMethodsOfClass(Class<T> classToMock) {
+        return Arrays.stream(classToMock.getMethods())
+                .filter(method -> Modifier.isStatic(method.getModifiers())
+                        && !objectMethods.contains(method))
+                .toList();
+    }
 
     public static <T> T mock(Class<T> classToMock) {
         final long currentId = counter++;
         mockMap.put(currentId, new ObjectMockEntity());
 
         var builder = new ByteBuddy().subclass(classToMock);
-        var methodList = Arrays.stream(classToMock.getMethods())
-                .filter(method -> !Modifier.isStatic(method.getModifiers())
-                        && !objectMethods.contains(method))
-                .toList();
+        var methodList = getMethodsOfClass(classToMock);
         for (Method method : methodList) {
             builder = builder
                     .method(ElementMatchers.is(method))
@@ -105,6 +119,32 @@ public class ObjectMock {
                  InvocationTargetException e) {
             throw new RuntimeException(e);
         }
+    }
+    public static <T> StaticStub<T> mockStatic(Class<T> classToMock) {
+
+        StaticStub<T> staticStub = new StaticStub<>(classToMock);
+
+        TypePool typePool = TypePool.Default.ofSystemLoader();
+        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+
+        TypeDescription typeDescription = typePool.describe(classToMock.getName()).resolve();
+
+        var staticMethods = getStaticMethodsOfClass(classToMock);
+
+        var builder = new ByteBuddy().redefine(typeDescription, ClassFileLocator.ForClassLoader.ofSystemLoader());
+
+        for (Method method : staticMethods) {
+            builder = builder
+                    .method(ElementMatchers.is(method))
+                    .intercept(
+                            MethodDelegation.to(DelegationClass.class)
+                                    .andThen(MethodCall.call(mockCall(counter))));
+        }
+        try (var made = builder.make()) {
+            made.load(classLoader, ClassLoadingStrategy.Default.INJECTION);
+        }
+
+        return staticStub;
     }
 
     private static Callable<?> mockCall(long objectId) {
