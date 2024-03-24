@@ -1,4 +1,3 @@
-import mock.core.ObjectMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;

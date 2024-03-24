@@ -38,7 +38,7 @@ public class Matchers {
         }
     }
 
-    static class EqualsMatcher<T> extends AbstractMatcher<T> {
+    public static class EqualsMatcher<T> extends AbstractMatcher<T> {
         private final T wanted;
 
         public EqualsMatcher(T wanted) {
@@ -52,7 +52,7 @@ public class Matchers {
 
         @Override
         boolean correspondToClass(Class<?> clazz) {
-            return clazz.isInstance(wanted);
+            return clazz.isAssignableFrom(wanted.getClass());
         }
     }
 

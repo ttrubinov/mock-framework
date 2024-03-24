@@ -9,19 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-public class ObjectStub<T> implements Stub<T> {
+public class MethodCallStub<T> implements Stub<T> {
     Method method;
     List<Object> arguments;
     MatcherGroup matchers;
     Long lastCalledObject;
 
-    public ObjectStub() {
+    public MethodCallStub() {
         method = DelegationClass.lastCalledMethod;
         arguments = new ArrayList<>(DelegationClass.lastArguments);
         matchers = ArgumentsMatcher.last;
-        if (matchers.correctForMethod(method)) {
-            throw new MockException("Matchers doesn't corresponded for this method");
-        }
         lastCalledObject = ObjectMock.lastCalledObject();
         if (lastCalledObject == null) {
             throw new MockException("There is no last mock object's call");
