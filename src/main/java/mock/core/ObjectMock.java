@@ -23,8 +23,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-//TODO: add check, Если был вызван метод и были указаны матчеры, то метод не должен выкинуть exception,
-// чтобы можно было сделать when + return без exception'а
 public class ObjectMock {
     private static final Map<Long, ObjectMockEntity> mockMap = new HashMap<>();
     private static long counter = 0;
@@ -218,7 +216,6 @@ public class ObjectMock {
         }
 
         mockEntity.addMatchersAndCall(method, matchers, callable);
-        //todo: in progress
     }
 
     public static <T> Stub<T> when(T methodCall) {
