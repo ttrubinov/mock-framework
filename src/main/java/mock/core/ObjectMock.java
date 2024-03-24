@@ -176,7 +176,6 @@ public class ObjectMock {
         }
 
         mockEntity.addMatchersAndCall(method, matchers, callable);
-        //todo: in progress
     }
 
     public static <T> Stub<T> when(T methodCall) {
