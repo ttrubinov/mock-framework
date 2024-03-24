@@ -1,14 +1,17 @@
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import ttrubinov.test.Main;
+
+import java.util.*;
 
 public class MyTest {
 
     @Test
     void myTest() {
-        var mockedMain = Mockito.mock(Main.class);
-        Mockito.when(mockedMain.doSth()).thenReturn("aboba");
-
-        System.out.println(mockedMain.doSth());
+    }
+    class MyClass {
+        public int aboba(int x, int y) {
+            return x + y;
+        }
     }
 }
