@@ -16,6 +16,10 @@ public class MyClass {
         return x + 1;
     }
 
+    public static int incc(int x) {
+        return x + 1;
+    }
+
     public boolean isOdd(int x) {
         return x % 2 == 1;
     }

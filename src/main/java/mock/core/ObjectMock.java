@@ -44,6 +44,11 @@ public class ObjectMock {
         private static class MethodMatchersAndCalls {
             final List<MatchAndCall> matchAndCallList = new ArrayList<>();
             Callable<?> defaultCall;
+            /**
+             * false - default class method  (Mockito.spy)
+             * true - intercept logic (Mockito.mock)
+             */
+            boolean toIntercept = true;
 
             MethodMatchersAndCalls(Method method) {
                 MatcherGroup matcherGroup = new MatcherGroup();
@@ -187,6 +192,10 @@ public class ObjectMock {
         var mockEntity = mockMap.get(objectId);
         lastCalledObject.set(objectId);
         ObjectMockEntity.MethodMatchersAndCalls matchersAndCalls = mockEntity.methodMap.get(method);
+        if (!matchersAndCalls.toIntercept) {
+            return DelegationClass.lastPossibleCall.call();
+        }
+
         if (!ArgumentsMatcher.last.isEmpty()) {
             return matchersAndCalls.defaultCall.call();
         }

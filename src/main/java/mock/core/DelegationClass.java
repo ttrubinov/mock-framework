@@ -19,7 +19,8 @@ public class DelegationClass {
         static Method lastCalledMethod = null;
         static final List<Method> calledStaticMethods = new ArrayList<>();
         static final Set<Method> originalMethods = new HashSet<>();
-        static final String message = "default";
+    static Callable<?> lastPossibleCall;
+    static final String message = "default";
 
         public static @RuntimeType Object ag(@AllArguments Object[] objects,
                                              @Origin Method method,
@@ -28,10 +29,11 @@ public class DelegationClass {
             lastArguments.clear();
             lastCalledMethod = method;
             calledMethod.add(method);
+            lastPossibleCall = callable;
             if (Modifier.isStatic(method.getModifiers())){
                 if (originalMethods.contains(method)) { //TODO: mb use this for turn back redefining
                     try {
-                        return callable.call();
+                        return method.invoke(objects);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

@@ -9,7 +9,7 @@ public class StaticStub<T> implements AutoCloseable {
     private DelegationClass savedClass;
 
     public <S> Stub<S> when(MethodApply methodApply) {
-        return new ObjectStub<>();
+        return new MethodCallStub<>();
     }
 
     private <T> void saveOriginalClass(Class<T> classToMock) {
