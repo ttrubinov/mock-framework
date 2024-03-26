@@ -179,7 +179,7 @@ public class ObjectMock {
         var builder = new ByteBuddy().redefine(typeDescription, ClassFileLocator.ForClassLoader.ofSystemLoader());
         for (Method method : staticMethods) {
             mockMap.get(currentId).addMethod(method);
-            builder
+            builder = builder
                     .method(ElementMatchers.is(method))
                     .intercept(
                             MethodDelegation.to(DelegationClass.class)
