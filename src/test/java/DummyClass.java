@@ -3,7 +3,7 @@ public class DummyClass {
         return x + y;
     }
 
-    public static String printNumber(int number) {
+    public static String numberToString(int number) {
         return number + "";
     }
 }
