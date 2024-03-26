@@ -44,14 +44,13 @@ public class DelegationClass {
     }
 
     @BindingPriority(0)
-    @Advice.OnMethodEnter
-    public static @RuntimeType Object bg(@Advice.AllArguments Object[] objects,
-                                         @Advice.Origin Method method) {
+    @Advice.OnMethodEnter(skipOn = Object.class)
+    public static @RuntimeType Object bg(@AllArguments Object[] objects,
+                                         @Origin Method method) {
+        System.out.println("DASKJHBFGIASLF");
         try {
             return method.invoke(objects).toString() + " HEHEHE";
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }

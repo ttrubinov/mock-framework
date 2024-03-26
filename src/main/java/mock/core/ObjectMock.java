@@ -182,11 +182,11 @@ public class ObjectMock {
         for (Method method : staticMethods) {
             mockMap.get(currentId).addMethod(method);
             builder = builder
-                    .visit(Advice.to(DelegationClass.class).on(ElementMatchers.is(method)));
-//                    .method(ElementMatchers.is(method))
-//                    .intercept(
-//                            MethodDelegation.to(DelegationClass.class)
-//                                    .andThen(MethodCall.call(mockCall(counter))));
+//                    .visit(Advice.to(DelegationClass.class).on(ElementMatchers.is(method)));
+                    .method(ElementMatchers.is(method))
+                    .intercept(
+                            MethodDelegation.to(DelegationClass.class)
+                                    .andThen(MethodCall.call(mockCall(counter))));
         }
 
         try (var made = builder.make()) {
