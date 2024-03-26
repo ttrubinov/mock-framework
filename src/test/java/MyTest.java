@@ -7,7 +7,7 @@ public class MyTest {
     void myTest() throws Exception {
         try (var mock = ObjectMock.mockStatic(MyClass.class)) {
             System.out.println(mock);
-//            mock.when(MyClass::world).thenReturn("ABOBA");
+            mock.when(MyClass::world).thenReturn("ABOBA");
         }
 //        try (MockedStatic<MyClass> utilities = Mockito.mockStatic(MyClass.class)) {
 //            utilities.when(() -> MyClass.world("5"))
@@ -15,7 +15,7 @@ public class MyTest {
 //        }
     }
 
-    class MyClass {
+    public class MyClass {
         public int aboba(int x, int y) {
             return x + y;
         }

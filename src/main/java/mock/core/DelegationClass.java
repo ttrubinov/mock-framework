@@ -1,10 +1,8 @@
 package mock.core;
 
-import net.bytebuddy.implementation.bind.annotation.AllArguments;
-import net.bytebuddy.implementation.bind.annotation.Origin;
-import net.bytebuddy.implementation.bind.annotation.RuntimeType;
-import net.bytebuddy.implementation.bind.annotation.SuperCall;
+import net.bytebuddy.implementation.bind.annotation.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -22,6 +20,7 @@ public class DelegationClass {
     static Callable<?> lastPossibleCall;
     static final String message = "default";
 
+    @BindingPriority(1)
     public static @RuntimeType Object ag(@AllArguments Object[] objects,
                                          @Origin Method method,
                                          @SuperCall Callable<?> callable) {
@@ -41,5 +40,17 @@ public class DelegationClass {
         }
         lastArguments.addAll(Arrays.stream(objects).toList());
         return null;
+    }
+
+    @BindingPriority(0)
+    public static @RuntimeType Object bg(@AllArguments Object[] objects,
+                                         @Origin Method method) {
+        try {
+            return method.invoke(objects).toString() + " HEHEHE";
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
