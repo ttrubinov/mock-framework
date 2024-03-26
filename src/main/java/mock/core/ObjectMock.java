@@ -173,10 +173,10 @@ public class ObjectMock {
                     .method(ElementMatchers.is(method))
                     .intercept(
                             MethodDelegation.to(DelegationClass.class)
-                                    /*.andThen(MethodCall.call(mockCall(counter)))*/);
+                                    .andThen(MethodCall.call(mockCall(counter))));
         }
         try (var made = builder.make()) {
-            made.load(classLoader, ClassLoadingStrategy.Default.INJECTION);
+            made.load(classLoader, ClassLoadingStrategy.Default.CHILD_FIRST);
         }
 
         return staticStub;
