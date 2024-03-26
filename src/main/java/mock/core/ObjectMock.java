@@ -5,23 +5,31 @@ import mock.matchers.ArgumentsMatcher;
 import mock.matchers.ArgumentsMatcher.MatcherGroup;
 import mock.matchers.Matchers;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.agent.ByteBuddyAgent;
+import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
 import net.bytebuddy.implementation.MethodCall;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.pool.TypePool;
 
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.IllegalClassFormatException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.ProtectionDomain;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static net.bytebuddy.matcher.ElementMatchers.named;
 
 public class ObjectMock {
     private static final Map<Long, ObjectMockEntity> mockMap = new HashMap<>();
@@ -152,6 +160,7 @@ public class ObjectMock {
             throw new RuntimeException(e);
         }
     }
+
     public static <T> StaticStub<T> mockStatic(Class<T> classToMock) {
         final long currentId = counter++;
         mockMap.put(currentId, new ObjectMockEntity());
@@ -165,18 +174,20 @@ public class ObjectMock {
 
         var staticMethods = getStaticMethodsOfClass(classToMock);
 
-        var builder = new ByteBuddy().redefine(typeDescription, ClassFileLocator.ForClassLoader.ofSystemLoader());
+        ByteBuddyAgent.install();
 
+        var builder = new ByteBuddy().redefine(typeDescription, ClassFileLocator.ForClassLoader.ofSystemLoader());
         for (Method method : staticMethods) {
             mockMap.get(currentId).addMethod(method);
-            builder = builder
+            builder
                     .method(ElementMatchers.is(method))
                     .intercept(
                             MethodDelegation.to(DelegationClass.class)
                                     .andThen(MethodCall.call(mockCall(counter))));
         }
+
         try (var made = builder.make()) {
-            made.load(classLoader, ClassLoadingStrategy.Default.CHILD_FIRST);
+            made.load(classLoader, ClassReloadingStrategy.fromInstalledAgent());
         }
 
         return staticStub;
