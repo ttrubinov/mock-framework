@@ -164,7 +164,7 @@ public class ObjectMock {
 
     public static <T> StaticStub<T> mockStatic(Class<T> classToMock) {
         final long currentId = counter++;
-        mockMap.put(currentId, new ObjectMockEntity());
+        mockMap.put(0L, new ObjectMockEntity());
 
         StaticStub<T> staticStub = new StaticStub<>(classToMock);
 
@@ -180,13 +180,13 @@ public class ObjectMock {
 //        var builder = new ByteBuddy().redefine(typeDescription, ClassFileLocator.ForClassLoader.ofSystemLoader());
         var builder = new ByteBuddy().redefine(classToMock);
         for (Method method : staticMethods) {
-            mockMap.get(currentId).addMethod(method);
+            mockMap.get(0L).addMethod(method);
             builder = builder
-//                    .visit(Advice.to(DelegationClass.class).on(ElementMatchers.is(method)));
-                    .method(ElementMatchers.is(method))
-                    .intercept(
-                            MethodDelegation.to(DelegationClass.class)
-                                    .andThen(MethodCall.call(mockCall(counter))));
+                    .visit(Advice.to(DelegationClass.class).on(ElementMatchers.is(method)));
+//                    .method(ElementMatchers.is(method))
+//                    .intercept(
+//                            MethodDelegation.to(DelegationClass.class)
+//                                    .andThen(MethodCall.call(mockCall(counter))));
         }
 
         try (var made = builder.make()) {
@@ -205,7 +205,7 @@ public class ObjectMock {
         return lastCalledObject.get();
     }
 
-    private static Object mockCall(Method method, List<Object> arguments, long objectId) throws Exception {
+    public static Object mockCall(Method method, List<Object> arguments, long objectId) throws Exception {
         var mockEntity = mockMap.get(objectId);
         lastCalledObject.set(objectId);
         ObjectMockEntity.MethodMatchersAndCalls matchersAndCalls = mockEntity.methodMap.get(method);

@@ -2,6 +2,7 @@ package mock.core;
 
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.implementation.bind.annotation.*;
+import net.bytebuddy.implementation.bytecode.assign.Assigner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,13 +14,13 @@ public class DelegationClass {
     public DelegationClass() {
     }
 
-    static final List<Object> lastArguments = new ArrayList<>();
-    static final List<Method> calledMethod = new ArrayList<>();
-    static Method lastCalledMethod = null;
-    static final List<Method> calledStaticMethods = new ArrayList<>();
-    static final Set<Method> originalMethods = new HashSet<>();
-    static Callable<?> lastPossibleCall;
-    static final String message = "default";
+    public static final List<Object> lastArguments = new ArrayList<>();
+    public static final List<Method> calledMethod = new ArrayList<>();
+    public static Method lastCalledMethod = null;
+    public static final List<Method> calledStaticMethods = new ArrayList<>();
+    public static final Set<Method> originalMethods = new HashSet<>();
+    public static Callable<?> lastPossibleCall;
+    public static final String message = "default";
 
     @BindingPriority(1)
     public static @RuntimeType Object ag(@AllArguments Object[] objects,
@@ -44,14 +45,26 @@ public class DelegationClass {
     }
 
     @BindingPriority(0)
-    @Advice.OnMethodEnter(skipOn = Object.class)
-    public static @RuntimeType Object bg(@AllArguments Object[] objects,
-                                         @Origin Method method) {
-        System.out.println("DASKJHBFGIASLF");
+    @Advice.OnMethodExit()
+    public static @RuntimeType Object bg(
+            @Advice.AllArguments Object[] objects,
+            @Advice.Origin Method method,
+            @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object value
+            ) {
         try {
-            return method.invoke(objects).toString() + " HEHEHE";
-        } catch (IllegalAccessException | InvocationTargetException e) {
+            lastArguments.clear();
+            calledMethod.add(method);
+            lastCalledMethod = method;
+            lastArguments.addAll(Arrays.stream(objects).toList());
+            value = ObjectMock.mockCall(method, Arrays.stream(objects).toList(), 0);
+            return value;
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
+//        try {
+//            return method.invoke(objects).toString() + " HEHEHE";
+//        } catch (IllegalAccessException | InvocationTargetException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 }
