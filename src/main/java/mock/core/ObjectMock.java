@@ -1,41 +1,40 @@
 package mock.core;
 
+import mock.exception.NotInterceptException;
 import mock.exception.MockException;
 import mock.matchers.ArgumentsMatcher;
 import mock.matchers.ArgumentsMatcher.MatcherGroup;
 import mock.matchers.Matchers;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
-import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.type.TypeDescription;
-import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
 import net.bytebuddy.implementation.MethodCall;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
-import net.bytebuddy.pool.TypePool;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.security.ProtectionDomain;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static net.bytebuddy.matcher.ElementMatchers.named;
-
 public class ObjectMock {
     private static final Map<Long, ObjectMockEntity> mockMap = new HashMap<>();
-    private static long counter = 0;
+    private static long counter = 1;
     private static final AtomicReference<Long> lastCalledObject = new AtomicReference<>(null);
+
+    public static <T> void setStaticIntercept(boolean bool, Class<T> tClass) {
+        var methods = getStaticMethodsOfClass(tClass);
+        var staticMap = mockMap.get(0L).methodMap;
+        for (Method method : methods) {
+            staticMap.get(method).toIntercept = bool;
+        }
+    }
 
     private static class ObjectMockEntity {
         //        public Object object;
@@ -168,25 +167,17 @@ public class ObjectMock {
 
         StaticStub<T> staticStub = new StaticStub<>(classToMock);
 
-//        TypePool typePool = TypePool.Default.ofSystemLoader();
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-
-//        TypeDescription typeDescription = typePool.describe(classToMock.getName()).resolve();
 
         var staticMethods = getStaticMethodsOfClass(classToMock);
 
         ByteBuddyAgent.install();
 
-//        var builder = new ByteBuddy().redefine(typeDescription, ClassFileLocator.ForClassLoader.ofSystemLoader());
         var builder = new ByteBuddy().redefine(classToMock);
         for (Method method : staticMethods) {
             mockMap.get(0L).addMethod(method);
             builder = builder
                     .visit(Advice.to(DelegationClass.class).on(ElementMatchers.is(method)));
-//                    .method(ElementMatchers.is(method))
-//                    .intercept(
-//                            MethodDelegation.to(DelegationClass.class)
-//                                    .andThen(MethodCall.call(mockCall(counter))));
         }
 
         try (var made = builder.make()) {
@@ -210,7 +201,7 @@ public class ObjectMock {
         lastCalledObject.set(objectId);
         ObjectMockEntity.MethodMatchersAndCalls matchersAndCalls = mockEntity.methodMap.get(method);
         if (!matchersAndCalls.toIntercept) {
-            return DelegationClass.lastPossibleCall.call();
+            throw new NotInterceptException();
         }
 
         if (!ArgumentsMatcher.last.isEmpty()) {

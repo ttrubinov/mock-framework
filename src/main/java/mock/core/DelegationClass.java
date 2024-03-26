@@ -1,10 +1,10 @@
 package mock.core;
 
+import mock.exception.NotInterceptException;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.implementation.bind.annotation.*;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -50,7 +50,7 @@ public class DelegationClass {
             @Advice.AllArguments Object[] objects,
             @Advice.Origin Method method,
             @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object value
-            ) {
+    ) {
         try {
             lastArguments.clear();
             calledMethod.add(method);
@@ -58,13 +58,11 @@ public class DelegationClass {
             lastArguments.addAll(Arrays.stream(objects).toList());
             value = ObjectMock.mockCall(method, Arrays.stream(objects).toList(), 0);
             return value;
-        } catch (Exception e) {
+        } catch (NotInterceptException e) {
+            return null;
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
-//        try {
-//            return method.invoke(objects).toString() + " HEHEHE";
-//        } catch (IllegalAccessException | InvocationTargetException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 }

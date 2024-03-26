@@ -2,32 +2,26 @@ package mock.core;
 
 public class StaticStub<T> implements AutoCloseable {
 
+    private Class<T> originalClass;
+
     public StaticStub(Class<T> classToMock) {
         saveOriginalClass(classToMock);
     }
-
-    private DelegationClass savedClass;
 
     public <S> Stub<S> when(S methodCall) {
         return new MethodCallStub<>();
     }
 
-    private <T> void saveOriginalClass(Class<T> classToMock) {
-//        savedClass = DelegationClass.ag();
+    private void saveOriginalClass(Class<T> classToMock) {
+        originalClass = classToMock;
     }
 
     private void restoreOriginalClass() {
-
+        ObjectMock.setStaticIntercept(false, originalClass);
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         restoreOriginalClass();
-    }
-
-    @FunctionalInterface
-    public interface MethodApply {
-
-        void apply() throws Throwable;
     }
 }
