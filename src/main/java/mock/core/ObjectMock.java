@@ -7,6 +7,7 @@ import mock.matchers.Matchers;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
@@ -167,23 +168,25 @@ public class ObjectMock {
 
         StaticStub<T> staticStub = new StaticStub<>(classToMock);
 
-        TypePool typePool = TypePool.Default.ofSystemLoader();
+//        TypePool typePool = TypePool.Default.ofSystemLoader();
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 
-        TypeDescription typeDescription = typePool.describe(classToMock.getName()).resolve();
+//        TypeDescription typeDescription = typePool.describe(classToMock.getName()).resolve();
 
         var staticMethods = getStaticMethodsOfClass(classToMock);
 
         ByteBuddyAgent.install();
 
-        var builder = new ByteBuddy().redefine(typeDescription, ClassFileLocator.ForClassLoader.ofSystemLoader());
+//        var builder = new ByteBuddy().redefine(typeDescription, ClassFileLocator.ForClassLoader.ofSystemLoader());
+        var builder = new ByteBuddy().redefine(classToMock);
         for (Method method : staticMethods) {
             mockMap.get(currentId).addMethod(method);
             builder = builder
-                    .method(ElementMatchers.is(method))
-                    .intercept(
-                            MethodDelegation.to(DelegationClass.class)
-                                    .andThen(MethodCall.call(mockCall(counter))));
+                    .visit(Advice.to(DelegationClass.class).on(ElementMatchers.is(method)));
+//                    .method(ElementMatchers.is(method))
+//                    .intercept(
+//                            MethodDelegation.to(DelegationClass.class)
+//                                    .andThen(MethodCall.call(mockCall(counter))));
         }
 
         try (var made = builder.make()) {

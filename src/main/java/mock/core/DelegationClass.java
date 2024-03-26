@@ -1,5 +1,6 @@
 package mock.core;
 
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.implementation.bind.annotation.*;
 
 import java.lang.reflect.InvocationTargetException;
@@ -43,8 +44,9 @@ public class DelegationClass {
     }
 
     @BindingPriority(0)
-    public static @RuntimeType Object bg(@AllArguments Object[] objects,
-                                         @Origin Method method) {
+    @Advice.OnMethodEnter
+    public static @RuntimeType Object bg(@Advice.AllArguments Object[] objects,
+                                         @Advice.Origin Method method) {
         try {
             return method.invoke(objects).toString() + " HEHEHE";
         } catch (IllegalAccessException e) {
