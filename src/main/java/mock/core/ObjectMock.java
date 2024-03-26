@@ -1,10 +1,10 @@
 package mock.core;
 
-import mock.exception.NotInterceptException;
 import mock.exception.MockException;
-import mock.matchers.ArgumentsMatcher;
-import mock.matchers.ArgumentsMatcher.MatcherGroup;
+import mock.exception.NotInterceptException;
 import mock.matchers.Matchers;
+import mock.matchers.Matchers.MatcherGroup;
+import mock.matchers.MatchersUtils;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.asm.Advice;
@@ -17,10 +17,14 @@ import net.bytebuddy.matcher.ElementMatchers;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class ObjectMock {
@@ -37,8 +41,7 @@ public class ObjectMock {
     }
 
     private static class ObjectMockEntity {
-        //        public Object object;
-        private Map<Method, MethodMatchersAndCalls> methodMap = new HashMap<>();
+        private final Map<Method, MethodMatchersAndCalls> methodMap = new HashMap<>();
 
         public void addMethod(Method method) {
             methodMap.put(method, new MethodMatchersAndCalls(method));
@@ -61,7 +64,7 @@ public class ObjectMock {
             MethodMatchersAndCalls(Method method) {
                 MatcherGroup matcherGroup = new MatcherGroup();
                 for (Class<?> parameterType : method.getParameterTypes()) {
-                    matcherGroup.add(new Matchers.AnyMatcher<>(parameterType));
+                    matcherGroup.add(new MatchersUtils.AnyMatcher<>(parameterType));
 //                    matcherGroup.add(new Matchers.AnyMatcher<>());
                 }
                 defaultCall = defaultCallForMethod(method);
@@ -78,16 +81,6 @@ public class ObjectMock {
                 }
                 //todo: think about return
                 return null;
-            }
-
-            void addMatcherAndCall(MatcherGroup matcherGroup, Object value) {
-                addMatcherAndCall(matcherGroup, () -> value);
-            }
-
-            void addMatcherAndCall(MatcherGroup matcherGroup, Exception throwable) {
-                addMatcherAndCall(matcherGroup, () -> {
-                    throw throwable;
-                });
             }
 
             void addMatcherAndCall(MatcherGroup matcherGroup, Callable<?> callable) {
@@ -122,7 +115,7 @@ public class ObjectMock {
         }
     }
 
-    private static Set<Method> objectMethods = Arrays.stream(Object.class.getMethods()).collect(Collectors.toSet());
+    private static final Set<Method> objectMethods = Arrays.stream(Object.class.getMethods()).collect(Collectors.toSet());
 
     private static <T> List<Method> getMethodsOfClass(Class<T> classToMock) {
         return Arrays.stream(classToMock.getMethods())
@@ -162,7 +155,6 @@ public class ObjectMock {
     }
 
     public static <T> StaticStub<T> mockStatic(Class<T> classToMock) {
-        final long currentId = counter++;
         mockMap.put(0L, new ObjectMockEntity());
 
         StaticStub<T> staticStub = new StaticStub<>(classToMock);
@@ -204,12 +196,11 @@ public class ObjectMock {
             throw new NotInterceptException();
         }
 
-        if (!ArgumentsMatcher.last.isEmpty()) {
+        if (!Matchers.last.isEmpty()) {
             return matchersAndCalls.defaultCall.call();
         }
-        var res = matchersAndCalls.callWithMatch(arguments);
 
-        return res;
+        return matchersAndCalls.callWithMatch(arguments);
     }
 
     public static void addLastCall(long lastCalledObject,
@@ -224,7 +215,7 @@ public class ObjectMock {
         if (matchers.isEmpty()) {
             MatcherGroup matcherGroup = new MatcherGroup();
             for (Object argument : arguments) {
-                matcherGroup.add(new Matchers.EqualsMatcher<>(argument));
+                matcherGroup.add(new MatchersUtils.EqualsMatcher<>(argument));
             }
             matchers = matcherGroup;
         }
@@ -233,26 +224,5 @@ public class ObjectMock {
         }
 
         mockEntity.addMatchersAndCall(method, matchers, callable);
-    }
-
-    public static <T> Stub<T> when(T methodCall) {
-        return new MethodCallStub<>();
-    }
-
-    public static <T> Stub<T> when(Supplier<T> methodCall) {
-        try {
-            methodCall.get();
-        } catch (Exception ignore) {
-
-        }
-        return new MethodCallStub<>();
-    }
-
-    public static Stub<Void> when(Runnable methodCall) {
-
-        return when(() -> {
-            methodCall.run();
-            return null;
-        });
     }
 }

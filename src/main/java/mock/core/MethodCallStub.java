@@ -1,8 +1,8 @@
 package mock.core;
 
 import mock.exception.MockException;
-import mock.matchers.ArgumentsMatcher;
-import mock.matchers.ArgumentsMatcher.MatcherGroup;
+import mock.matchers.Matchers;
+import mock.matchers.Matchers.MatcherGroup;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -18,12 +18,12 @@ public class MethodCallStub<T> implements Stub<T> {
     public MethodCallStub() {
         method = DelegationClass.lastCalledMethod;
         arguments = new ArrayList<>(DelegationClass.lastArguments);
-        matchers = ArgumentsMatcher.last;
+        matchers = Matchers.last;
         lastCalledObject = ObjectMock.lastCalledObject();
         if (lastCalledObject == null) {
             throw new MockException("There is no last mock object's call");
         }
-        ArgumentsMatcher.clearMatchers();
+        Matchers.clearMatchers();
     }
 
     @Override
