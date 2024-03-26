@@ -153,6 +153,8 @@ public class ObjectMock {
         }
     }
     public static <T> StaticStub<T> mockStatic(Class<T> classToMock) {
+        final long currentId = counter++;
+        mockMap.put(currentId, new ObjectMockEntity());
 
         StaticStub<T> staticStub = new StaticStub<>(classToMock);
 
@@ -166,11 +168,12 @@ public class ObjectMock {
         var builder = new ByteBuddy().redefine(typeDescription, ClassFileLocator.ForClassLoader.ofSystemLoader());
 
         for (Method method : staticMethods) {
+            mockMap.get(currentId).addMethod(method);
             builder = builder
                     .method(ElementMatchers.is(method))
                     .intercept(
                             MethodDelegation.to(DelegationClass.class)
-                                    .andThen(MethodCall.call(mockCall(counter))));
+                                    /*.andThen(MethodCall.call(mockCall(counter)))*/);
         }
         try (var made = builder.make()) {
             made.load(classLoader, ClassLoadingStrategy.Default.INJECTION);
