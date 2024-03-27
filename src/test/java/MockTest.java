@@ -3,6 +3,7 @@ import mock.matchers.Matchers;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class MockTest {
 
@@ -61,5 +62,26 @@ public class MockTest {
         assertEquals(1, mock2.plus(3, 2));
         assertEquals(1, mock2.plus(5, 10));
         assertEquals(0, mock2.plus(6, 7));
+    }
+
+    @Test
+    void matchersWithExceptionsTest() {
+        var mock = Mock.mock(DummyClass.class);
+        Mock.when(mock.plus(Matchers.anyInt(), Matchers.anyInt())).thenThrow(new RuntimeException());
+        assertThrows(RuntimeException.class, () -> mock.plus(1, 1));
+        assertThrows(RuntimeException.class, () -> mock.plus(0, 0));
+
+        Mock.when(mock.plus(Matchers.anyInt(), Matchers.eq(0))).thenThrow(new RuntimeException());
+        assertThrows(RuntimeException.class, () -> mock.plus(1, 0));
+
+        Mock.when(mock.plus(Matchers.eq(0), Matchers.anyInt())).thenThrow(new RuntimeException());
+        assertThrows(RuntimeException.class, () -> mock.plus(0, 1));
+
+        Mock.when(() -> mock.plus(0, 0)).thenReturn(0);
+
+        assertThrows(RuntimeException.class, () -> mock.plus(1, 1));
+        assertThrows(RuntimeException.class, () -> mock.plus(1, 0));
+        assertThrows(RuntimeException.class, () -> mock.plus(0, 1));
+        assertEquals(0, mock.plus(0, 0));
     }
 }
