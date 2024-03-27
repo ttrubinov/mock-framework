@@ -17,25 +17,21 @@ import net.bytebuddy.matcher.ElementMatchers;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class ObjectMock {
     private static final Map<Long, ObjectMockEntity> mockMap = new HashMap<>();
-    private static long counter = 1;
+    private final static Long StaticObjectId = 0L;
+    private static long counter = StaticObjectId + 1;
     private static final AtomicReference<Long> lastCalledObject = new AtomicReference<>(null);
     public static final List<StaticStub<?>> staticStabs = new ArrayList<>();
 
     public static <T> void setStaticIntercept(boolean bool, Class<T> tClass) {
         var methods = getStaticMethodsOfClass(tClass);
-        var staticMap = mockMap.get(0L).methodMap;
+        var staticMap = mockMap.get(StaticObjectId).methodMap;
         for (Method method : methods) {
             staticMap.get(method).toIntercept = bool;
         }
@@ -156,7 +152,7 @@ public class ObjectMock {
     }
 
     public static <T> StaticStub<T> mockStatic(Class<T> classToMock) {
-        mockMap.put(0L, new ObjectMockEntity());
+        mockMap.put(StaticObjectId, new ObjectMockEntity());
 
         StaticStub<T> staticStub = new StaticStub<>(classToMock);
         staticStabs.add(staticStub);
@@ -169,7 +165,7 @@ public class ObjectMock {
 
         var builder = new ByteBuddy().redefine(classToMock);
         for (Method method : staticMethods) {
-            mockMap.get(0L).addMethod(method);
+            mockMap.get(StaticObjectId).addMethod(method);
             builder = builder
                     .visit(Advice.to(DelegationClass.class).on(ElementMatchers.is(method)));
         }
