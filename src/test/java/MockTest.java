@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MyTest {
+public class MockTest {
 
     @Test
     void mockTest() {
@@ -55,5 +55,11 @@ public class MyTest {
         Mock.when(mock.plus(Matchers.anyInt(), Matchers.anyInt())).thenReturn(1);
         assertEquals(1, mock.plus(3, 2));
         assertEquals(1, mock.plus(5, 10));
+
+        var mock2 = Mock.mock(DummyClass.class);
+        Mock.when(mock2.plus(Matchers.in(3, 5), Matchers.in(2, 10))).thenReturn(1);
+        assertEquals(1, mock2.plus(3, 2));
+        assertEquals(1, mock2.plus(5, 10));
+        assertEquals(0, mock2.plus(6, 7));
     }
 }
