@@ -31,6 +31,7 @@ public class ObjectMock {
     private static final Map<Long, ObjectMockEntity> mockMap = new HashMap<>();
     private static long counter = 1;
     private static final AtomicReference<Long> lastCalledObject = new AtomicReference<>(null);
+    public static final List<StaticStub<?>> staticStabs = new ArrayList<>();
 
     public static <T> void setStaticIntercept(boolean bool, Class<T> tClass) {
         var methods = getStaticMethodsOfClass(tClass);
@@ -158,6 +159,7 @@ public class ObjectMock {
         mockMap.put(0L, new ObjectMockEntity());
 
         StaticStub<T> staticStub = new StaticStub<>(classToMock);
+        staticStabs.add(staticStub);
 
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 
