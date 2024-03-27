@@ -16,15 +16,12 @@ public class MockExtensionTest {
         var mock = Mock.mockStatic(DummyClass.class);
         mock.when(DummyClass.numberToString(5)).thenReturn("Mock number");
 
-        System.out.println("A");
-
         assertEquals("Mock number", DummyClass.numberToString(5));
     }
 
     @Test
     @Order(2)
     void test2() {
-        System.out.println("B");
         assertEquals("5", DummyClass.numberToString(5));
     }
 }
