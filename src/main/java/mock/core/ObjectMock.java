@@ -24,14 +24,14 @@ import java.util.stream.Collectors;
 
 public class ObjectMock {
     private static final Map<Long, ObjectMockEntity> mockMap = new HashMap<>();
-    private final static Long StaticObjectId = 0L;
-    private static long counter = StaticObjectId + 1;
+    private final static Long STATIC_OBJECT_ID = 0L;
+    private static long counter = STATIC_OBJECT_ID + 1;
     private static final AtomicReference<Long> lastCalledObject = new AtomicReference<>(null);
     public static final List<StaticStub<?>> staticStabs = new ArrayList<>();
 
     public static <T> void setStaticIntercept(boolean bool, Class<T> tClass) {
         var methods = getStaticMethodsOfClass(tClass);
-        var staticMap = mockMap.get(StaticObjectId).methodMap;
+        var staticMap = mockMap.get(STATIC_OBJECT_ID).methodMap;
         for (Method method : methods) {
             staticMap.get(method).toIntercept = bool;
         }
@@ -152,7 +152,7 @@ public class ObjectMock {
     }
 
     public static <T> StaticStub<T> mockStatic(Class<T> classToMock) {
-        mockMap.put(StaticObjectId, new ObjectMockEntity());
+        mockMap.put(STATIC_OBJECT_ID, new ObjectMockEntity());
 
         StaticStub<T> staticStub = new StaticStub<>(classToMock);
         staticStabs.add(staticStub);
@@ -165,7 +165,7 @@ public class ObjectMock {
 
         var builder = new ByteBuddy().redefine(classToMock);
         for (Method method : staticMethods) {
-            mockMap.get(StaticObjectId).addMethod(method);
+            mockMap.get(STATIC_OBJECT_ID).addMethod(method);
             builder = builder
                     .visit(Advice.to(DelegationClass.class).on(ElementMatchers.is(method)));
         }
