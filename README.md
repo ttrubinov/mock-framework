@@ -2,26 +2,26 @@
 
 ### Мок объектов:
 
-* ClassToMock mocked = Mock.mock(ClassToMock.class) - создаётся мок объекта
-* Stub\<ClassToMock> when = Mock.when(mocked.method(...)) - задаётся условие
-* when.thenReturn(...) - задаётся возвращаемое значение по условию
-* when.thenThrow(...) - задаётся выбрасываемый exception по условию
+* ``ClassToMock mocked = Mock.mock(ClassToMock.class)`` - создаётся мок объекта
+* ``Stub<ClassToMock> when = Mock.when(mocked.method(...))`` - задаётся условие
+* ``when.thenReturn(...)`` - задаётся возвращаемое значение по условию
+* ``when.thenThrow(...)`` - задаётся выбрасываемый exception по условию
 
 ### Mock классов (для мока статик-методов):
 
-* StaticStub\<ClassToMock> mock = Mock.mockStatic(ClassToMock.class) - создаётся мок класса
-* Stub\<ClassToMock> when = mock.when(ClassToMock.method(...)) - задаётся условие
-* thenReturn() и thenThrow() аналогично моку объектов
+* ``StaticStub<ClassToMock> mock = Mock.mockStatic(ClassToMock.class)`` - создаётся мок класса
+* ``Stub<ClassToMock> when = mock.when(ClassToMock.method(...))`` - задаётся условие
+* ``thenReturn()`` и ``thenThrow()`` аналогично моку объектов
 * Для того, чтобы класс вернулся в исходное состояние, мок нужно закрывать:
-  можно использовать try-with-resources, а можно использовать аннотацию **@MockTest**
+  можно использовать try-with-resources, а можно использовать аннотацию ``@MockTest``
   на тестовом классе, тогда мок будет автоматически закрываться после каждого теста
 
 ### Matchers (работают для мока как динамических, так и для статических методов):
 
-* any() - любой аргумент
-* anyInt(), anyLong(), ... - любой аргумент соответствующего примитивного типа
-* eq() - проверка на equals
-* in(...) - агрумент лежит в множестве переданных объектов
+* ``any()`` - любой аргумент
+* ``anyInt()``, ``anyLong()``, ... - любой аргумент соответствующего примитивного типа
+* ``eq()`` - проверка на equals
+* ``in(...)`` - агрумент лежит в множестве переданных объектов
 
 ## Примеры использования
 
