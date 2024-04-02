@@ -136,15 +136,25 @@ public class ObjectMock {
         var methodList = getMethodsOfClass(classToMock);
         for (Method method : methodList) {
             mockMap.get(currentId).addMethod(method);
-            builder = builder
-                    .method(ElementMatchers.is(method))
+            DynamicType.Builder.MethodDefinition.ImplementationDefinition<T> methodBuilder;
+            if (Modifier.isAbstract(method.getModifiers())) {
+                methodBuilder = builder.define(method);
+            } else {
+                methodBuilder = builder
+                        .method(ElementMatchers.is(method));
+            }
+            builder = methodBuilder
                     .intercept(
                             MethodDelegation.to(DelegationClass.class)
                                     .andThen(MethodCall.call(mockCall(currentId))));
         }
         try (DynamicType.Unloaded<T> maked = builder.make()) {
-            var dynamicType = maked.load(classToMock.getClassLoader()).getLoaded();
-            return dynamicType.getDeclaredConstructor().newInstance();
+            var dynamicType = maked.load(ClassLoader.getSystemClassLoader()).getLoaded();
+            var instance = dynamicType.getDeclaredConstructor().newInstance();
+            for (Method instanceMethod : getMethodsOfClass(instance.getClass())) {
+                mockMap.get(currentId).addMethod(instanceMethod);
+            }
+            return instance;
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
                  InvocationTargetException e) {
             throw new RuntimeException(e);

@@ -1,4 +1,5 @@
 import mock.core.Mock;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,5 +39,12 @@ public class MockTest {
         }
         assertEquals("5", DummyClass.numberToString(5));
         assertEquals(1, mock.plus(3, 2));
+    }
+
+    @Test
+    void tst() {
+        var r = Mock.mock(Aboba.class);
+        Mock.when(r.f()).thenReturn(2);
+        Assertions.assertEquals(2, r.f());
     }
 }

@@ -2,13 +2,16 @@ package mock.core;
 
 import mock.exception.NotInterceptException;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.implementation.bind.annotation.*;
+import net.bytebuddy.implementation.bind.annotation.AllArguments;
+import net.bytebuddy.implementation.bind.annotation.BindingPriority;
+import net.bytebuddy.implementation.bind.annotation.Origin;
+import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.concurrent.Callable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class DelegationClass {
     public DelegationClass() {
@@ -17,29 +20,12 @@ public class DelegationClass {
     public static final List<Object> lastArguments = new ArrayList<>();
     public static final List<Method> calledMethod = new ArrayList<>();
     public static Method lastCalledMethod = null;
-    public static final List<Method> calledStaticMethods = new ArrayList<>();
-    public static final Set<Method> originalMethods = new HashSet<>();
-    public static Callable<?> lastPossibleCall;
-    public static final String message = "default";
 
-    @BindingPriority(1)
+    @BindingPriority(2)
     public static @RuntimeType Object ag(@AllArguments Object[] objects,
-                                         @Origin Method method,
-                                         @SuperCall Callable<?> callable) {
+                                         @Origin Method method) {
         lastArguments.clear();
         lastCalledMethod = method;
-        calledMethod.add(method);
-        lastPossibleCall = callable;
-        if (Modifier.isStatic(method.getModifiers())) {
-            if (originalMethods.contains(method)) { //TODO: mb use this for turn back redefining
-                try {
-                    return method.invoke(objects);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            calledStaticMethods.add(method);
-        }
         lastArguments.addAll(Arrays.stream(objects).toList());
         return null;
     }
