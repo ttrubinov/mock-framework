@@ -30,7 +30,7 @@
 ```java
 
 @MockTest // аннотация для закрытия мока после теста
-public class MockExtensionTest {
+public class MockTest {
     @Test
     void test1() {
         var mock = Mock.mockStatic(DummyClass.class);
@@ -49,7 +49,7 @@ public class MockExtensionTest {
 ### Мок объекта:
 
 ```java
-public class MockExtensionTest {
+public class MockTest {
     @Test
     void mockTest() {
         var mock = Mock.mock(DummyClass.class);
@@ -62,7 +62,7 @@ public class MockExtensionTest {
 ### Использование matchers:
 
 ```java
-public class MockExtensionTest {
+public class MockTest {
     @Test
     void mockTest() {
         var mock = Mock.mock(DummyClass.class);
